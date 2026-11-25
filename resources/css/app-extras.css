@@ -1,0 +1,45 @@
+/* ------------------------------------------------------------------
+   Tambahan untuk versi Laravel. File ini HANYA berisi hal yang belum
+   ada di site.css (hasil ekstrak mockup statis), supaya design asli
+   tetap utuh dan mudah di-diff kalau mockup-nya berubah.
+------------------------------------------------------------------ */
+
+/* sidebar admin pakai <a>, mockup-nya pakai <button> */
+.side nav a{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:10px 12px;border-radius:10px;font-size:.875rem;font-weight:500;
+  color:var(--on-dark-muted);transition:background .16s,color .16s;
+}
+.side nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.side nav a.active{background:rgba(255,255,255,.12);color:#fff;font-weight:600}
+.side form{margin:0}
+
+/* .field select, .field textarea, .form-grid, .form-actions, dan
+   input[type=file] sudah ada di site.css versi final, jadi tidak ditulis ulang. */
+.field .err{margin:0;font-size:.8125rem;color:#A33A2A}
+
+/* checkbox di dalam form grid */
+.field-check{display:flex;align-items:center;gap:10px;font-size:.875rem;padding-top:6px}
+.field-check input{width:18px;height:18px;accent-color:var(--accent)}
+
+/* thumbnail di mode edit (lebih besar dari .thumb tabel) */
+.preview{width:100%;max-width:240px;border-radius:var(--r-ctl);border:1px solid var(--line);display:block}
+
+/* pesan sukses / info */
+.flash{
+  margin:20px 0 0;padding:12px 16px;border-radius:var(--r-ctl);
+  background:var(--accent-soft);color:var(--accent);border:1px solid #CFE0D3;
+  font-size:.875rem;font-weight:600;
+}
+.admin-main .flash{margin:0 0 20px}
+.flash.alert{background:#FBEDEA;color:#A33A2A;border-color:#F0CFC8}
+.empty{padding:44px 22px;text-align:center;color:var(--muted);font-size:.9375rem}
+.todo{padding:22px;border:1px dashed var(--line);border-radius:var(--r-card);color:var(--muted);font-size:.9375rem;background:#FBFAF6}
+
+@media (max-width:860px){
+  .admin{grid-template-columns:1fr}
+  .side{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .side .brand{width:100%;margin-bottom:8px}
+  .side nav{display:flex;flex-wrap:wrap;gap:6px}
+  .side form{margin-left:auto}
+}

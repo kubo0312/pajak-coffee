@@ -1,0 +1,6 @@
+/* Entry Vite. Semua design tetap di dua file ini:
+   - site.css       : hasil ekstrak mockup, JANGAN diedit tangan
+   - app-extras.css : tambahan khusus Laravel
+   Kalau Vite nggak jalan, halaman tetap tampil lewat public/css/ (fallback). */
+@import './site.css';
+@import './app-extras.css';
