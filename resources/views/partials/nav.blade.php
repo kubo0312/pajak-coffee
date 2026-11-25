@@ -1,23 +1,35 @@
-<header class="nav">
-  <div class="nav-in">
-    <a class="brand" href="{{ route('home') }}"><span class="mark">{{ $profile->brand_mark }}</span> {{ $profile->name }}</a>
+@php($navLinks = [
+    ['home', 'Beranda', 'home'],
+    ['about', 'Tentang', 'about'],
+    ['menu', 'Menu', 'menu'],
+    ['gallery', 'Galeri', 'gallery'],
+    ['contact', 'Lokasi & Kontak', 'contact'],
+])
 
-    <button class="nav-toggle" id="navToggle" aria-expanded="false">Menu</button>
+<header class="sticky top-0 z-40 h-[68px] border-b border-line bg-canvas/90 backdrop-blur-md">
+    <div class="mx-auto flex h-full w-full max-w-page items-center gap-8 px-6">
+        <a href="{{ route('home') }}" class="flex items-center gap-2.5 text-[1.0625rem] font-extrabold tracking-[-.03em]">
+            <span class="grid size-[30px] place-items-center rounded-[9px] bg-accent text-[.8125rem] font-extrabold leading-none tracking-normal text-white">{{ $profile->brand_mark }}</span>
+            {{ $profile->name }}
+        </a>
 
-    <nav class="nav-links" id="navLinks">
-      <a href="{{ route('home') }}" data-nav="home" @if (request()->routeIs('home')) aria-current="page" @endif>Beranda</a>
-      <a href="{{ route('about') }}" data-nav="about" @if (request()->routeIs('about')) aria-current="page" @endif>Tentang</a>
-      <a href="{{ route('menu') }}" data-nav="menu" @if (request()->routeIs('menu')) aria-current="page" @endif>Menu</a>
-      <a href="{{ route('gallery') }}" data-nav="galeri" @if (request()->routeIs('gallery')) aria-current="page" @endif>Galeri</a>
-      <a href="{{ route('contact') }}" data-nav="lokasi" @if (request()->routeIs('contact')) aria-current="page" @endif>Lokasi &amp; Kontak</a>
+        <button id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks"
+                class="ml-auto rounded-ctl border border-line px-3 py-2 text-sm font-semibold sm:hidden">Menu</button>
 
-      @auth
-        <a class="nav-admin" href="{{ route('admin.dashboard') }}">Admin</a>
-      @else
-        <a class="nav-admin" href="{{ route('login') }}">Masuk admin</a>
-      @endauth
-    </nav>
+        <nav id="navLinks" class="ml-auto hidden gap-[26px] text-sm font-medium sm:flex">
+            @foreach ($navLinks as [$route, $label, $key])
+                <a href="{{ route($route) }}"
+                   @if (request()->routeIs($key)) aria-current="page" @endif
+                   class="border-b-2 border-transparent py-1.5 text-muted transition-colors hover:text-ink aria-[current=page]:border-accent aria-[current=page]:text-ink">{{ $label }}</a>
+            @endforeach
 
-    <a class="nav-admin nav-site" href="{{ route('home') }}">Lihat website</a>
-  </div>
+            @auth
+                <a href="{{ route('admin.dashboard') }}"
+                   class="ml-1.5 rounded-ctl border border-line px-3.5 py-2 font-semibold text-muted transition-colors hover:border-border-hover hover:bg-surface hover:text-ink">Admin</a>
+            @else
+                <a href="{{ route('login') }}"
+                   class="ml-1.5 rounded-ctl border border-line px-3.5 py-2 font-semibold text-muted transition-colors hover:border-border-hover hover:bg-surface hover:text-ink">Masuk admin</a>
+            @endauth
+        </nav>
+    </div>
 </header>

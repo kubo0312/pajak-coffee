@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -23,9 +24,13 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function store(CategoryRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->validated();
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:40', Rule::unique('categories', 'name')],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
+        ]);
+
         $data['slug'] = $this->uniqueSlug($data['name']);
         $data['sort_order'] = $data['sort_order'] ?? 0;
 
@@ -39,12 +44,15 @@ class CategoryController extends Controller
         return view('admin.category.form', ['category' => $category]);
     }
 
-    public function update(CategoryRequest $request, Category $category)
+    public function update(Request $request, Category $category)
     {
-        $data = $request->validated();
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:40', Rule::unique('categories', 'name')->ignore($category)],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
+        ]);
+
         $data['sort_order'] = $data['sort_order'] ?? 0;
 
-        // slug dibiarkan, supaya URL /menu?kategori=... tidak patah
         $category->update($data);
 
         return redirect()->route('admin.categories')->with('status', 'Kategori diperbarui.');
@@ -61,7 +69,7 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories')->with('status', 'Kategori dihapus.');
     }
 
-    private function uniqueSlug(string $name): string
+    private function uniqueSlug($name)
     {
         $base = Str::slug($name) ?: 'kategori';
         $slug = $base;

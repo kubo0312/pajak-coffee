@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\MenuRequest;
 use App\Models\Category;
 use App\Models\Menu;
-use App\Support\ImageUpload;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class MenuController extends Controller
@@ -26,9 +25,33 @@ class MenuController extends Controller
         ]);
     }
 
-    public function store(MenuRequest $request)
+    public function store(Request $request)
     {
-        Menu::create($this->payload($request));
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'price' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'description' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'string', 'max:255'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
+            'is_available' => ['nullable', 'boolean'],
+            'is_featured' => ['nullable', 'boolean'],
+        ]);
+
+        unset($data['photo']);
+        $data['is_available'] = $request->boolean('is_available');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['sort_order'] = $data['sort_order'] ?? 0;
+        $data['slug'] = Str::slug($data['name']).'-'.Str::lower(Str::random(4));
+
+        if ($request->hasFile('photo')) {
+            $nama = Str::random(8).'.'.$request->file('photo')->extension();
+            $request->file('photo')->move(public_path('uploads'), $nama);
+            $data['image'] = 'uploads/'.$nama;
+        }
+
+        Menu::create($data);
 
         return redirect()->route('admin.menu.index')->with('status', 'Menu baru ditambahkan.');
     }
@@ -41,43 +64,46 @@ class MenuController extends Controller
         ]);
     }
 
-    public function update(MenuRequest $request, Menu $menu)
+    public function update(Request $request, Menu $menu)
     {
-        $menu->update($this->payload($request, $menu));
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'category_id' => ['required', 'exists:categories,id'],
+            'price' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'description' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'string', 'max:255'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
+            'is_available' => ['nullable', 'boolean'],
+            'is_featured' => ['nullable', 'boolean'],
+        ]);
+
+        unset($data['photo']);
+        $data['is_available'] = $request->boolean('is_available');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['sort_order'] = $data['sort_order'] ?? 0;
+
+        if ($request->hasFile('photo')) {
+            if ($menu->image && str_starts_with($menu->image, 'uploads/')) {
+                @unlink(public_path($menu->image));
+            }
+            $nama = Str::random(8).'.'.$request->file('photo')->extension();
+            $request->file('photo')->move(public_path('uploads'), $nama);
+            $data['image'] = 'uploads/'.$nama;
+        }
+
+        $menu->update($data);
 
         return redirect()->route('admin.menu.index')->with('status', 'Menu diperbarui.');
     }
 
     public function destroy(Menu $menu)
     {
-        ImageUpload::delete($menu->image);
+        if ($menu->image && str_starts_with($menu->image, 'uploads/')) {
+            @unlink(public_path($menu->image));
+        }
         $menu->delete();
 
         return redirect()->route('admin.menu.index')->with('status', 'Menu dihapus.');
-    }
-
-    private function payload(MenuRequest $request, ?Menu $menu = null): array
-    {
-        $data = $request->validated();
-        unset($data['photo']);
-
-        $data['is_available'] = $request->boolean('is_available');
-        $data['is_featured'] = $request->boolean('is_featured');
-        $data['sort_order'] = $data['sort_order'] ?? 0;
-
-        // foto baru menang atas path manual
-        if ($path = ImageUpload::store($request->file('photo'))) {
-            if ($menu) {
-                ImageUpload::delete($menu->image);
-            }
-            $data['image'] = $path;
-        }
-
-        // slug hanya dibuat sekali; biar URL/relasi tidak berubah saat nama diedit
-        if (! $menu) {
-            $data['slug'] = Str::slug($data['name']).'-'.Str::lower(Str::random(4));
-        }
-
-        return $data;
     }
 }

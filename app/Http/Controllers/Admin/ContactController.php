@@ -3,20 +3,35 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ContactRequest;
 use App\Models\SiteProfile;
+use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
     public function edit()
     {
-        return view('admin.contact.edit', ['site' => SiteProfile::current()]);
+        $site = SiteProfile::first();
+        $hoursText = collect($site->hours ?? [])
+            ->map(fn ($row) => trim(($row['label'] ?? '').' | '.($row['value'] ?? '')))
+            ->implode("\n");
+
+        return view('admin.contact.edit', [
+            'site' => $site,
+            'hoursText' => $hoursText,
+        ]);
     }
 
-    public function update(ContactRequest $request)
+    public function update(Request $request)
     {
-        $profile = SiteProfile::current();
-        $data = $request->validated();
+        $profile = SiteProfile::first();
+        $data = $request->validate([
+            'address' => ['required', 'string', 'max:255'],
+            'hours' => ['required', 'string', 'max:500'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'whatsapp' => ['nullable', 'string', 'max:30'],
+            'instagram' => ['nullable', 'string', 'max:60'],
+            'map_query' => ['required', 'string', 'max:255'],
+        ]);
 
         $data['hours'] = $this->hours($data['hours']);
 
@@ -25,11 +40,7 @@ class ContactController extends Controller
         return redirect()->route('admin.contact')->with('status', 'Lokasi dan kontak diperbarui.');
     }
 
-    /**
-     * Format textarea: satu baris = satu baris jam buka.
-     * "Senin - Jumat | 10.00 - 24.00"
-     */
-    private function hours(string $text): array
+    private function hours($text)
     {
         $rows = [];
 

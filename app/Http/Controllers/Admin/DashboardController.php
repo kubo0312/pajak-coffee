@@ -9,7 +9,7 @@ use App\Models\Menu;
 
 class DashboardController extends Controller
 {
-    public function __invoke()
+    public function index()
     {
         return view('admin.dashboard', [
             'menuCount' => Menu::count(),

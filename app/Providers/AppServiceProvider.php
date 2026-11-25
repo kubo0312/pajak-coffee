@@ -15,12 +15,16 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Profil usaha dipakai nav, footer, dan semua halaman.
-        // Satu query per request, cukup untuk skala company profile.
-        View::composer('*', function ($view) {
-            if (! array_key_exists('profile', $view->getData())) {
-                $view->with('profile', SiteProfile::current());
-            }
-        });
+        $profile = SiteProfile::firstOrCreate([], [
+            'name' => 'Pajak Coffee',
+            'brand_mark' => 'PC',
+            'tagline' => 'Kedai kopi di Dumai Kota',
+            'hero_title' => 'Kopi yang menemani malam di Dumai.',
+            'address' => 'Jl. Sultan Hasanuddin, Rimba Sekampung, Dumai Kota',
+            'hours' => [],
+            'mission' => [],
+        ]);
+
+        View::share('profile', $profile);
     }
 }
